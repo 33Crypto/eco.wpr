@@ -25,6 +25,18 @@ class CLITests(unittest.TestCase):
         self.assertIn("ETH-USD      2,500", output.getvalue())
         self.assertEqual(get_spot_price.call_count, 2)
 
+    @patch("market_monitor.cli.get_yobit_price")
+    def test_selects_yobit_and_default_pair(self, get_yobit_price):
+        get_yobit_price.return_value = ProductPrice("btc_usd", Decimal("67000"))
+        output = io.StringIO()
+
+        with redirect_stdout(output):
+            result = main(["--exchange", "yobit", "--once"])
+
+        self.assertEqual(result, 0)
+        get_yobit_price.assert_called_once_with("btc_usd")
+        self.assertIn("btc_usd      67,000", output.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()
