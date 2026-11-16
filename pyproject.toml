@@ -12,6 +12,7 @@ dependencies = []
 
 [project.scripts]
 market-monitor = "market_monitor.cli:main"
+economy-monitor = "market_monitor.economy:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
