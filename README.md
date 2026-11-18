@@ -25,15 +25,32 @@ bun test               # test suite
 
 - `src/types.ts` — the AssetRecord shape
 - `src/registry.ts` — the recorder: register, flag, release, look up, save/load
-- `src/index.ts` — a small demo that opens a ledger and prints it
-- `test/` — tests for the registry
+- `src/store.ts` — the wiring: fail-safe store and Pipeline log
+- `src/index.ts` — a demo that opens a wired ledger and prints it
+- `test/` — tests for the registry and the wiring
+
+## Wiring
+
+The registry can be wired two ways, following the ecosystem's design:
+
+- **Fail-safe store** — lock33idsystem's role is the ecosystem's stored
+  record: when something fails, you reproduce from it. `FileStore`
+  stands in for it locally, keeping the whole ledger as one JSON file.
+  Every change is saved as it happens, and a registry opened on a
+  store that already holds a ledger rebuilds itself from that file.
+- **LOCK33 Pipeline** — the connective layer between the domains.
+  `PipeLog` stands in for it locally: every change to the ledger is
+  written as one pipe message (a JSON line) that anything downstream
+  can read.
+
+Neither the Pipeline nor lock33idsystem has a live service yet, so
+these are local stand-ins that follow the same pattern — when the
+real services exist, the wiring points at them instead of files.
 
 ## Status
 
-First implementation (v0.1.0). The registry works in memory and saves
-or loads the whole ledger as JSON. Storage through the LOCK33 Pipeline
-and connection to lock33idsystem, the ecosystem's fail-safe store, are
-the next steps.
+v0.2.0 — recorder working, wired to the local fail-safe store and
+pipe log, 9 tests passing.
 
 ## Help
 

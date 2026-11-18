@@ -6,10 +6,34 @@
 // ledger can be stored anywhere.
 
 import type { AssetRecord, AssetStatus, NewAsset } from "./types";
+import type { LedgerStore, PipeLog } from "./store";
+
+export interface RegistryWiring {
+  /** Fail-safe store (lock33idsystem's stand-in). If it already holds
+   *  a ledger, the registry rebuilds itself from it on open. */
+  store?: LedgerStore;
+  /** Pipeline log. Every change is sent down the pipe. */
+  pipe?: PipeLog;
+}
 
 export class AssetRegistry {
   private records: AssetRecord[] = [];
   private nextNumber = 1;
+
+  constructor(private wiring: RegistryWiring = {}) {
+    const stored = this.wiring.store?.load();
+    if (stored) {
+      const restored = AssetRegistry.load(stored);
+      this.records = restored.records;
+      this.nextNumber = restored.nextNumber;
+    }
+  }
+
+  /** After every change: save to the fail-safe store, tell the pipe. */
+  private afterChange(type: string, detail: string): void {
+    this.wiring.store?.save(this.save());
+    this.wiring.pipe?.send(type, detail);
+  }
 
   /** Open a protection record for an asset. Returns the new record. */
   register(input: NewAsset): AssetRecord {
@@ -24,6 +48,7 @@ export class AssetRegistry {
     };
     this.nextNumber += 1;
     this.records.push(record);
+    this.afterChange("asset.registered", `${record.id} ${record.asset}`);
     return record;
   }
 
@@ -35,6 +60,7 @@ export class AssetRegistry {
     }
     record.status = status;
     if (note) record.note = note;
+    this.afterChange("asset.status", `${record.id} -> ${status}`);
     return record;
   }
 
