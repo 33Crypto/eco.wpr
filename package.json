@@ -1,0 +1,1 @@
+{"description":"LOCK33 Organization repository based on humanities' need for an authority to protect assets.","name":"eco.wpr","scripts":{"start":"bun run src/index.ts","test":"bun test"},"type":"module","version":"0.1.0"}
