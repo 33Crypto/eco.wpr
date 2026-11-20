@@ -42,6 +42,12 @@ describe("AssetRegistry", () => {
     expect(registry.byOwner("A")[0].asset).toBe("one");
   });
 
+  test("get returns undefined for an unknown ID", () => {
+    const registry = new AssetRegistry();
+    registry.register({ owner: "A", asset: "one", kind: "domain" });
+    expect(registry.get("ECO-9999")).toBeUndefined();
+  });
+
   test("save and load round-trip the ledger", () => {
     const registry = new AssetRegistry();
     registry.register({ owner: "A", asset: "one", kind: "domain" });
